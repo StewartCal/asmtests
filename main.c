@@ -20,7 +20,7 @@ int main(){
 	if (starting_index != -1)
 	{ printf("The substring was found starting at index %d.", starting_index); }
 	else
-	{ printf("The substring was not found in the main string."); }
+	{ printf("The substring was not found in the main string.\n"); }
 
 	return 0;
 }
