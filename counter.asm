@@ -7,12 +7,16 @@ extern stdin
 
 section .data
     prompt db "Enter a string: ", 0
-    fmt_char db "%c: %d", 10, 0
-    newline db 10, 0
+    fmt_result db "A: %d", 10, "E: %d", 10, "I: %d", 10, "O: %d", 10, "U: %d", 10, 0
 
 section .bss
     buffer resb 100
-    freq   resd 26
+
+    count_a resd 1
+    count_e resd 1
+    count_i resd 1
+    count_o resd 1
+    count_u resd 1
 
 section .text
 
@@ -32,63 +36,80 @@ main:
     call fgets
     add esp, 12
 
-    ; zero freq array
-    mov ecx, 26
-    mov edi, freq
-zero_loop:
-    mov dword [edi], 0
-    add edi, 4
-    loop zero_loop
+    ; zero counters
+    mov dword [count_a], 0
+    mov dword [count_e], 0
+    mov dword [count_i], 0
+    mov dword [count_o], 0
+    mov dword [count_u], 0
 
-    ; count frequencies
     mov esi, buffer
 
-count_loop:
+check_next_char:
     mov al, [esi]
+
     cmp al, 0
     je print_results
 
-    ; uppercase A-Z → lowercase
+    ; convert uppercase to lowercase if needed
     cmp al, 'A'
-    jl check_lower
+    jl check_vowels
     cmp al, 'Z'
-    jg check_lower
+    jg check_vowels
     add al, 32
 
-check_lower:
+check_vowels:
     cmp al, 'a'
-    jl next_char
-    cmp al, 'z'
-    jg next_char
+    je found_a
 
-    sub al, 'a'
-    movzx eax, al
+    cmp al, 'e'
+    je found_e
 
-    mov ebx, [freq + eax*4]
-    inc ebx
-    mov [freq + eax*4], ebx
+    cmp al, 'i'
+    je found_i
 
-next_char:
+    cmp al, 'o'
+    je found_o
+
+    cmp al, 'u'
+    je found_u
+
+    jmp move_to_next_char
+
+found_a:
+    inc dword [count_a]
+    jmp move_to_next_char
+
+found_e:
+    inc dword [count_e]
+    jmp move_to_next_char
+
+found_i:
+    inc dword [count_i]
+    jmp move_to_next_char
+
+found_o:
+    inc dword [count_o]
+    jmp move_to_next_char
+
+found_u:
+    inc dword [count_u]
+
+move_to_next_char:
     inc esi
-    jmp count_loop
+    jmp check_next_char
 
-; print results
 print_results:
-    mov ecx, 26
-    mov ebx, 0          ; index
-
-print_loop:
-    push dword [freq + ebx*4]
-    mov eax, 'a'
-    add eax, ebx
-    push eax
-    push fmt_char
+    push dword [count_u]
+    push dword [count_o]
+    push dword [count_i]
+    push dword [count_e]
+    push dword [count_a]
+    push fmt_result
     call printf
-    add esp, 12
-
-    inc ebx
-    loop print_loop
+    add esp, 24
 
     mov eax, 0
+
     pop ebp
     ret
